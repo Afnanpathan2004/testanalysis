@@ -88,6 +88,7 @@ class PDFReportGenerator:
         question_columns: List[str],
         charts: Dict[str, Any],
         class_name: str = "Pre-test / Post-test Analysis",
+        teacher_name: str = "",
         include_individual_pages: bool = True
     ):
         """
@@ -117,7 +118,7 @@ class PDFReportGenerator:
         story = []
         
         # Title page
-        story.extend(self._create_title_page(class_name, class_stats, df_merged))
+        story.extend(self._create_title_page(class_name, teacher_name, class_stats, df_merged))
         story.append(PageBreak())
         
         # Table of contents
@@ -182,7 +183,8 @@ class PDFReportGenerator:
         faculty_rating: Dict[str, Any],
         class_summary_text: str,
         charts: Dict[str, Any],
-        class_name: str = "Pre-test / Post-test Analysis"
+        class_name: str = "Pre-test / Post-test Analysis",
+        teacher_name: str = ""
     ):
         """
         Generate compact PDF report (class-level only, top/bottom performers).
@@ -209,7 +211,7 @@ class PDFReportGenerator:
         story = []
         
         # Title page
-        story.extend(self._create_title_page(class_name, class_stats, df_merged))
+        story.extend(self._create_title_page(class_name, teacher_name, class_stats, df_merged))
         story.append(PageBreak())
         
         # Executive summary
@@ -243,6 +245,7 @@ class PDFReportGenerator:
     def _create_title_page(
         self,
         class_name: str,
+        teacher_name: str,
         class_stats: Dict[str, Any],
         df_merged: pd.DataFrame
     ) -> List:
@@ -258,6 +261,14 @@ class PDFReportGenerator:
             self.styles['Heading2']
         ))
         elements.append(Spacer(1, 0.5*inch))
+        
+        # Teacher name if provided
+        if teacher_name:
+            elements.append(Paragraph(
+                f"Instructor: {teacher_name}",
+                self.styles['Heading3']
+            ))
+            elements.append(Spacer(1, 0.3*inch))
         
         # Report metadata
         report_date = datetime.now().strftime("%B %d, %Y at %I:%M %p")

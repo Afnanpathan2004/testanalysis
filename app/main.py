@@ -516,7 +516,7 @@ def plot_statistical_summary(class_stats: Dict):
     return fig
 
 
-def generate_pdf_reports(results: Dict, class_name: str, temp_dir: Path):
+def generate_pdf_reports(results: Dict, class_name: str, teacher_name: str, temp_dir: Path):
     """Generate PDF reports and return file paths."""
     pdf_gen = PDFReportGenerator()
     
@@ -583,6 +583,7 @@ def generate_pdf_reports(results: Dict, class_name: str, temp_dir: Path):
         question_columns=results['question_columns'],
         charts=charts,
         class_name=class_name,
+        teacher_name=teacher_name,
         include_individual_pages=st.session_state.get('include_individual', True)
     )
     
@@ -596,7 +597,8 @@ def generate_pdf_reports(results: Dict, class_name: str, temp_dir: Path):
         faculty_rating=results['faculty_rating'],
         class_summary_text=results['class_summary'],
         charts=charts,
-        class_name=class_name
+        class_name=class_name,
+        teacher_name=teacher_name
     )
     
     return full_pdf_path, compact_pdf_path
@@ -643,6 +645,13 @@ def main():
             help="Optional: Name of the class or lecture for the report"
         )
         
+        teacher_name = st.text_input(
+            "Teacher/Instructor Name",
+            value="",
+            placeholder="Enter teacher name (optional)",
+            help="Optional: Name of the teacher/instructor for the report"
+        )
+        
         include_individual = st.checkbox(
             "Include Individual Student Pages in PDF",
             value=True,
@@ -650,6 +659,7 @@ def main():
         )
         
         st.session_state['include_individual'] = include_individual
+        st.session_state['teacher_name'] = teacher_name
         
         st.markdown("---")
         st.caption("📖 Tip: Both files must follow the exact same template format")
@@ -1007,7 +1017,7 @@ def main():
                 temp_path = Path(temp_dir)
                 
                 full_pdf, compact_pdf = generate_pdf_reports(
-                    results, class_name, temp_path
+                    results, class_name, st.session_state.get('teacher_name', ''), temp_path
                 )
                 
                 col1, col2 = st.columns(2)
