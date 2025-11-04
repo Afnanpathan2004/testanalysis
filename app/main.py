@@ -768,7 +768,91 @@ def main():
     st.markdown("---")
     
     # Perform analysis
-    st.header("Step 2: Analysis")
+    st.header("Step 0: Participant Matching")
+    
+    with st.spinner("Matching participants..."):
+        # Match participants first to show who gave both tests
+        df_pre_temp = df_pre.copy()
+        df_post_temp = df_post.copy()
+        df_pre_temp['ticket_no'] = df_pre_temp['ticket_no'].astype(str).str.strip()
+        df_post_temp['ticket_no'] = df_post_temp['ticket_no'].astype(str).str.strip()
+        
+        tickets_pre = set(df_pre_temp['ticket_no'])
+        tickets_post = set(df_post_temp['ticket_no'])
+        tickets_both = tickets_pre & tickets_post
+        tickets_only_pre = tickets_pre - tickets_both
+        tickets_only_post = tickets_post - tickets_both
+    
+    # Display matching statistics
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="kpi-card" style="border-left-color: #28a745;">
+            <div class="kpi-value" style="color: #28a745;">{len(tickets_both)}</div>
+            <div class="kpi-label">✅ Completed Both Tests</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="kpi-card" style="border-left-color: #ffc107;">
+            <div class="kpi-value" style="color: #ffc107;">{len(tickets_only_pre)}</div>
+            <div class="kpi-label">⚠️ Only Pre-test</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="kpi-card" style="border-left-color: #dc3545;">
+            <div class="kpi-value" style="color: #dc3545;">{len(tickets_only_post)}</div>
+            <div class="kpi-label">⚠️ Only Post-test</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Show detailed lists in expandable sections
+    if len(tickets_both) > 0:
+        with st.expander(f"✅ View {len(tickets_both)} students who completed both tests", expanded=False):
+            matched_students = df_pre_temp[df_pre_temp['ticket_no'].isin(tickets_both)][['name', 'ticket_no']].sort_values('name')
+            st.dataframe(matched_students.reset_index(drop=True), use_container_width=True)
+    
+    if len(tickets_only_pre) > 0:
+        with st.expander(f"⚠️ View {len(tickets_only_pre)} students who only took pre-test", expanded=False):
+            only_pre = df_pre_temp[df_pre_temp['ticket_no'].isin(tickets_only_pre)][['name', 'ticket_no']].sort_values('name')
+            st.dataframe(only_pre.reset_index(drop=True), use_container_width=True)
+            
+            # Download button for pre-only list
+            csv_pre_only = only_pre.to_csv(index=False)
+            st.download_button(
+                label="📥 Download Pre-test Only List (CSV)",
+                data=csv_pre_only,
+                file_name="students_pre_only.csv",
+                mime="text/csv",
+                key="download_pre_only"
+            )
+    
+    if len(tickets_only_post) > 0:
+        with st.expander(f"⚠️ View {len(tickets_only_post)} students who only took post-test", expanded=False):
+            only_post = df_post_temp[df_post_temp['ticket_no'].isin(tickets_only_post)][['name', 'ticket_no']].sort_values('name')
+            st.dataframe(only_post.reset_index(drop=True), use_container_width=True)
+            
+            # Download button for post-only list
+            csv_post_only = only_post.to_csv(index=False)
+            st.download_button(
+                label="📥 Download Post-test Only List (CSV)",
+                data=csv_post_only,
+                file_name="students_post_only.csv",
+                mime="text/csv",
+                key="download_post_only"
+            )
+    
+    st.success(f"✅ {len(tickets_both)} students will be included in the analysis")
+    st.markdown("---")
+    
+    # Perform analysis
+    st.header("Step 1: Analysis")
     
     with st.spinner("Computing analytics..."):
         results = perform_analysis(
@@ -796,13 +880,14 @@ def main():
                 label="📥 Download Discarded List (CSV)",
                 data=csv_discarded,
                 file_name="discarded_students.csv",
-                mime="text/csv"
+                mime="text/csv",
+                key="download_discarded_list"
             )
     
     st.markdown("---")
     
     # Display KPIs
-    st.header("Step 3: Key Performance Indicators")
+    st.header("Step 2: Key Performance Indicators")
     display_kpi_cards(
         results['class_stats'],
         results['faculty_rating'],
@@ -813,7 +898,7 @@ def main():
     st.markdown("---")
     
     # Visualizations in tabs
-    st.header("Step 4: Interactive Visualizations")
+    st.header("Step 3: Interactive Visualizations")
     
     tab1, tab2, tab3 = st.tabs(["📈 Class-Level", "📊 Question-Level", "👤 Student-Level"])
     
@@ -943,7 +1028,7 @@ def main():
     st.markdown("---")
     
     # Text analysis
-    st.header("Step 5: Summary & Insights")
+    st.header("Step 4: Summary & Insights")
     
     with st.expander("📝 Class Summary (Human-Readable)", expanded=True):
         st.text(results['class_summary'])
@@ -965,7 +1050,7 @@ def main():
     st.markdown("---")
     
     # Downloads
-    st.header("Step 6: Download Reports")
+    st.header("Step 5: Download Reports")
     
     col1, col2, col3 = st.columns(3)
     
@@ -977,6 +1062,7 @@ def main():
             data=merged_csv,
             file_name="merged_analysis.csv",
             mime="text/csv",
+            key="download_merged_csv",
             help="Download complete dataset with all computed metrics"
         )
     
@@ -988,7 +1074,8 @@ def main():
                 label="📥 Download Discarded List (CSV)",
                 data=discarded_csv,
                 file_name="discarded_students.csv",
-                mime="text/csv"
+                mime="text/csv",
+                key="download_discarded_csv"
             )
     
     with col3:
@@ -1005,7 +1092,8 @@ def main():
             label="📥 Download Complete Report (Excel)",
             data=buffer,
             file_name="complete_analysis.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="download_complete_excel"
         )
     
     # PDF generation
@@ -1029,6 +1117,7 @@ def main():
                             data=f.read(),
                             file_name="full_report.pdf",
                             mime="application/pdf",
+                            key="download_full_pdf",
                             help="Complete report with individual student pages" if include_individual else "Complete report"
                         )
                 
@@ -1039,6 +1128,7 @@ def main():
                             data=f.read(),
                             file_name="compact_report.pdf",
                             mime="application/pdf",
+                            key="download_compact_pdf",
                             help="Summary report with class-level analysis only"
                         )
         except Exception as e:
