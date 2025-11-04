@@ -1052,6 +1052,10 @@ def main():
     # Downloads
     st.header("Step 5: Download Reports")
     
+    # Generate safe filename from class name once for all downloads
+    safe_class_name = "".join(c if c.isalnum() or c in (' ', '-', '_') else '_' for c in class_name)
+    safe_class_name = safe_class_name.replace(' ', '_').strip('_')
+    
     col1, col2, col3 = st.columns(3)
     
     with col1:
@@ -1060,7 +1064,7 @@ def main():
         st.download_button(
             label="📥 Download Merged Data (CSV)",
             data=merged_csv,
-            file_name="merged_analysis.csv",
+            file_name=f"{safe_class_name}_Merged_Data.csv",
             mime="text/csv",
             key="download_merged_csv",
             help="Download complete dataset with all computed metrics"
@@ -1073,7 +1077,7 @@ def main():
             st.download_button(
                 label="📥 Download Discarded List (CSV)",
                 data=discarded_csv,
-                file_name="discarded_students.csv",
+                file_name=f"{safe_class_name}_Discarded_Students.csv",
                 mime="text/csv",
                 key="download_discarded_csv"
             )
@@ -1091,7 +1095,7 @@ def main():
         st.download_button(
             label="📥 Download Complete Report (Excel)",
             data=buffer,
-            file_name="complete_analysis.xlsx",
+            file_name=f"{safe_class_name}_Complete_Analysis.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             key="download_complete_excel"
         )
@@ -1108,6 +1112,10 @@ def main():
                     results, class_name, st.session_state.get('teacher_name', ''), temp_path
                 )
                 
+                # Generate safe filename from class name
+                safe_class_name = "".join(c if c.isalnum() or c in (' ', '-', '_') else '_' for c in class_name)
+                safe_class_name = safe_class_name.replace(' ', '_').strip('_')
+                
                 col1, col2 = st.columns(2)
                 
                 with col1:
@@ -1115,7 +1123,7 @@ def main():
                         st.download_button(
                             label="📥 Download Full PDF Report",
                             data=f.read(),
-                            file_name="full_report.pdf",
+                            file_name=f"{safe_class_name}_Full_Report.pdf",
                             mime="application/pdf",
                             key="download_full_pdf",
                             help="Complete report with individual student pages" if include_individual else "Complete report"
@@ -1126,7 +1134,7 @@ def main():
                         st.download_button(
                             label="📥 Download Compact PDF Report",
                             data=f.read(),
-                            file_name="compact_report.pdf",
+                            file_name=f"{safe_class_name}_Compact_Report.pdf",
                             mime="application/pdf",
                             key="download_compact_pdf",
                             help="Summary report with class-level analysis only"
