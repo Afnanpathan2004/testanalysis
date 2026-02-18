@@ -1,11 +1,3 @@
-                            ""
-Pre-test / Post-test Analysis Streamlit Application
-
-This is the main entry point for the Streamlit app. It provides an interactive
-interface for uploading test files, validating data, computing analytics,
-visualizing results, and generating comprehensive PDF reports.
-"""
-
 import io
 import logging
 import tempfile

@@ -1,7 +1,3 @@
-"""
-Verification script to check that all components are working correctly.
-"""
-
 import sys
 from pathlib import Path
 
@@ -21,7 +17,7 @@ def test_imports():
         import openpyxl
         import scipy.stats
         
-        from utils import (
+        from app.utils import (
             validate_excel_file,
             match_participants,
             compute_scores_and_gains,
@@ -30,7 +26,7 @@ def test_imports():
             compute_faculty_rating
         )
         
-        from report import PDFReportGenerator
+        from app.report import PDFReportGenerator
         
         print("✓ All imports successful")
         return True
@@ -67,7 +63,7 @@ def test_validation():
     print("\nTesting validation on sample files...")
     try:
         import pandas as pd
-        from utils import validate_excel_file, validate_matching_structure
+        from app.utils import validate_excel_file, validate_matching_structure
         
         examples_dir = Path(__file__).parent / 'examples'
         
@@ -113,7 +109,7 @@ def test_analysis():
     print("\nTesting analysis pipeline...")
     try:
         import pandas as pd
-        from utils import (
+        from app.utils import (
             match_participants,
             compute_scores_and_gains,
             compute_class_statistics,
